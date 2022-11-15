@@ -7,16 +7,12 @@ import pyautogui
 pyautogui.PAUSE = 0
 
 class Event(NamedTuple):
-    id: int
     point: pyautogui.Point
     delay: float
     type: str
 
-
-evt_count = 0
-
 initial_timestamp = last_timestamp = datetime.now().timestamp()
-actual_event = Event(id = evt_count, point = pyautogui.position(), delay = 0, type = 'move')
+actual_event = Event(point = pyautogui.position(), delay = 0, type = 'move')
 
 event_queue = [actual_event]
 
@@ -34,14 +30,12 @@ while(True):
 
     # mouse moved
     if event_type != None:
-        evt_count += 1
         
-        event_id = evt_count + 1
         event_point = pyautogui.Point(current_position.x, current_position.y)
         event_timestamp = datetime.now().timestamp()
         event_delay = event_timestamp - last_timestamp
 
-        event = Event(id = event_id, point = event_point, delay = event_delay, type = event_type)
+        event = Event(point = event_point, delay = event_delay, type = event_type)
         last_timestamp = event_timestamp
         actual_event = event
 
