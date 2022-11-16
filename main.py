@@ -3,6 +3,7 @@ from typing import NamedTuple
 
 import keyboard
 import pyautogui
+import pynput
 
 pyautogui.PAUSE = 0
 
@@ -16,8 +17,15 @@ actual_event = Event(point = pyautogui.position(), delay = 0, type = 'move')
 
 event_queue = [actual_event]
 
+def on_click(x, y, button, pressed):
+    print('{0} at {1} - {2}'.format(
+        'Pressed' if pressed else 'Released', 
+        (x, y), button))
+listener = pynput.mouse.Listener(on_click=on_click)
+
 print("Recording...")
 
+listener.start()
 while(True):
     if keyboard.is_pressed('space'):
         break
@@ -40,8 +48,7 @@ while(True):
         actual_event = event
 
         event_queue.append(event)
-
-
+listener.stop()
 
 print('Registered {evt_count} events in {duration} seconds.'.format(evt_count = len(event_queue), duration = last_timestamp - initial_timestamp))
 print('Replaying...')
@@ -55,6 +62,6 @@ for event in event_queue:
         pyautogui.moveTo(event.point.x, event.point.y)
 
 end_ts_replay = datetime.now().timestamp()
-print('Replayed in {duration} seconds.'.format(duration = end_ts_replay - initial_ts_replay))
 
+print('Replayed in {duration} seconds.'.format(duration = end_ts_replay - initial_ts_replay))
 print('Finished!')
