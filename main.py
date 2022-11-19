@@ -17,10 +17,42 @@ actual_event = Event(point = pyautogui.position(), delay = 0, type = 'move')
 
 event_queue = [actual_event]
 
+def generate_event(event_type):
+    global last_timestamp, event_queue, actual_event
+
+    event_point = pyautogui.Point(current_position.x, current_position.y)
+    event_timestamp = datetime.now().timestamp()
+    event_delay = event_timestamp - last_timestamp
+
+    event = Event(point = event_point, delay = event_delay, type = event_type)
+    last_timestamp = event_timestamp
+    actual_event = event
+
+    event_queue.append(event)
+    return event
+
+
 def on_click(x, y, button, pressed):
-    print('{0} at {1} - {2}'.format(
-        'Pressed' if pressed else 'Released', 
-        (x, y), button))
+    global last_timestamp, event_queue, actual_event
+
+    event_type = 'click-'
+    if button == pynput.mouse.Button.left: 
+        event_type += 'left'
+    elif button == pynput.mouse.Button.right:
+        event_type += 'right'
+    else:
+        # TODO throw error - unknown button
+        pass
+
+    event_type += '-'
+
+    if pressed:
+        event_type += 'press'
+    else:
+        event_type += 'release'
+
+    generate_event(event_type)
+
 listener = pynput.mouse.Listener(on_click=on_click)
 
 print("Recording...")
@@ -38,16 +70,8 @@ while(True):
 
     # mouse moved
     if event_type != None:
-        
-        event_point = pyautogui.Point(current_position.x, current_position.y)
-        event_timestamp = datetime.now().timestamp()
-        event_delay = event_timestamp - last_timestamp
+        generate_event(event_type)
 
-        event = Event(point = event_point, delay = event_delay, type = event_type)
-        last_timestamp = event_timestamp
-        actual_event = event
-
-        event_queue.append(event)
 listener.stop()
 
 print('Registered {evt_count} events in {duration} seconds.'.format(evt_count = len(event_queue), duration = last_timestamp - initial_timestamp))
@@ -60,6 +84,8 @@ for event in event_queue:
     
     if event.type == 'move':
         pyautogui.moveTo(event.point.x, event.point.y)
+    elif event.type.startswith('click'):
+        _, button, press = event.type.split('-')
 
 end_ts_replay = datetime.now().timestamp()
 
