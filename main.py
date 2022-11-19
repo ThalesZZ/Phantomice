@@ -86,6 +86,8 @@ for event in event_queue:
         pyautogui.moveTo(event.point.x, event.point.y)
     elif event.type.startswith('click'):
         _, button, press = event.type.split('-')
+        action = pyautogui.mouseDown if press == 'press' else pyautogui.mouseUp
+        action(x=event.point.x, y=event.point.y, button=button)
 
 end_ts_replay = datetime.now().timestamp()
 
